@@ -1,0 +1,93 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+parameters:
+- name: image
+  displayName: Pool Image
+  type: string
+  default: windows-latest
+  values:
+  - windows-latest
+  - ubuntu-latest
+  - macOS-latest
+
+resources:
+  repositories:
+  - repository: packer
+    type: github
+    name: aaronparker/packer
+    endpoint: aaronparker
+
+trigger:
+- none
+
+jobs:
+- job: build
+  displayName: build
+  pool: 
+    vmImage: ${{ parameters.image }}
+
+  steps:
+  - checkout: packer
+    clean: 'true'
+
+  - task: riezebosch.Packer.PackerTool.PackerTool@0
+    displayName: 'Install Packer'
+    inputs:
+      version: '1.8.0'
+
+  - task: Packer@1
+    displayName: 'Validate Packer template'
+    inputs:
+      connectedServiceType: 'azure'
+      azureSubscription: 'Visual Studio Enterprise Subscription(63e8f660-f6a4-4ac5-ad4e-623268509f20)'
+      templatePath: 'templates/rds/PackerTemplate-WindowsAzure.pkr.hcl'
+      command: 'validate'
+      variables-file: 'templates/rds/PackerVariables-Windows11Enterprise.pkr.hcl'
+
+  - task: Packer@1
+    displayName: 'Build Packer template'
+    inputs:
+      connectedServiceType: 'azure'
+      azureSubscription: 'Visual Studio Enterprise Subscription(63e8f660-f6a4-4ac5-ad4e-623268509f20)'
+      templatePath: 'templates/rds/PackerTemplate-WindowsAzure.pkr.hcl'
+      command: 'build'
+      variables-file: 'templates/rds/PackerVariables-Windows11Enterprise.pkr.hcl'
+
+  - task: ExtractFiles@1
+    displayName: 'Extract report archive'
+    inputs:
+      archiveFilePatterns: '$(System.DefaultWorkingDirectory)/Installed.zip'
+      destinationFolder: '$(System.DefaultWorkingDirectory)/reports'
+      cleanDestinationFolder: true
+      overwriteExistingFiles: true
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish image-details'
+    inputs:
+      PathtoPublish: '$(System.DefaultWorkingDirectory)/reports'
+      ArtifactName: 'image-details'
+  - task: PowerShell@2
+    displayName: 'Install PowerShell modules'
+    inputs:
+      targetType: 'inline'
+      script: |
+        Install-Module -Name "MarkdownPS"
+        Install-Module -Name "powershell-yaml"
+        Install-Module -Name "posh-git"
+
+  - task: PowerShell@2
+    displayName: 'Publish report markdown'
+    inputs:
+      targetType: filePath
+      filePath: './pipeline/Publish-MarkdownReport.ps1'
+      arguments: '-Verbose'
+
+  - task: PowerShell@2
+    displayName: 'Commit changes'
+    inputs:
+      targetType: filePath
+      filePath: './pipeline/Push-Git.ps1'
+      arguments: '$(GitHubKey)'
