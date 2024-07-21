@@ -10,15 +10,13 @@ parameters:
   default: windows-latest
   values:
   - windows-latest
-  - ubuntu-latest
-  - macOS-latest
 
 resources:
   repositories:
   - repository: packer
     type: github
-    name: aaronparker/packer
-    endpoint: aaronparker
+    name: victajay/packer-demo
+    endpoint: victajay
 
 trigger:
 - none
@@ -42,7 +40,7 @@ jobs:
     displayName: 'Validate Packer template'
     inputs:
       connectedServiceType: 'azure'
-      azureSubscription: 'Visual Studio Enterprise Subscription(63e8f660-f6a4-4ac5-ad4e-623268509f20)'
+      azureSubscription: '545a7b1a-0425-4cf0-95ac-825c1e4130e8'
       templatePath: 'templates/rds/PackerTemplate-WindowsAzure.pkr.hcl'
       command: 'validate'
       variables-file: 'templates/rds/PackerVariables-Windows11Enterprise.pkr.hcl'
@@ -51,7 +49,8 @@ jobs:
     displayName: 'Build Packer template'
     inputs:
       connectedServiceType: 'azure'
-      azureSubscription: 'Visual Studio Enterprise Subscription(63e8f660-f6a4-4ac5-ad4e-623268509f20)'
+      azureSubscription: '545a7b1a-0425-4cf0-95ac-825c1e4130e8
+'
       templatePath: 'templates/rds/PackerTemplate-WindowsAzure.pkr.hcl'
       command: 'build'
       variables-file: 'templates/rds/PackerVariables-Windows11Enterprise.pkr.hcl'
