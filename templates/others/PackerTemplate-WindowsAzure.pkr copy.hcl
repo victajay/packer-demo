@@ -2,7 +2,7 @@ packer {
   required_plugins {
     windows-update = {
       version = "0.14.1"
-      source  = "github.com/rgl/windows-update"
+      source = "github.com/rgl/windows-update"
     }
   }
 }
@@ -19,32 +19,32 @@ variable "apps_url" {
 
 variable "client_id" {
   type    = string
-  default = "cc057028-e6d0-456a-b07b-50de4f7ca8e5"
+  default = ""
 }
 
 variable "client_secret" {
   type    = string
-  default = "jYY8Q~23yFH77~dQrEJCaNgNdreTAynHxCnXZcWa"
+  default = ""
 }
 
 variable "subscription_id" {
   type    = string
-  default = "545a7b1a-0425-4cf0-95ac-825c1e4130e8"
+  default = "{00000000-0000-0000-0000-00000000000}"
 }
 
 variable "tenant_id" {
   type    = string
-  default = "4e5d4dd9-71bf-4ae4-a2c1-4c31c300b220"
+  default = ""
 }
 
 variable "build_key_vault" {
   type    = string
-  default = "vicjayimageaustraliaeast"
+  default = "stpyimageaustraliaeast"
 }
 
 variable "build_resource_group" {
   type    = string
-  default = "mypackergroup"
+  default = "rg-ImageBuild-AustraliaEast"
 }
 
 variable "build_subnet" {
@@ -64,7 +64,7 @@ variable "destination_gallery_name" {
 
 variable "destination_resource_group_name" {
   type    = string
-  default = "mypackergroup"
+  default = "rg-Images-AustraliaEast"
 }
 
 variable "destination_image_version" {
@@ -94,7 +94,7 @@ variable "locale" {
 
 variable "managed_image_resource_group_name" {
   type    = string
-  default = "mypackergroup"
+  default = ""
 }
 
 variable "packages_url" {
@@ -102,27 +102,22 @@ variable "packages_url" {
   default = ""
 }
 
-variable "image_offer" {
+variable "source_image_offer" {
   type    = string
-  default = "Windows11"
+  default = "Windows-10"
 }
 
-variable "image_publisher" {
+variable "source_image_publisher" {
   type    = string
   default = "MicrosoftWindowsDesktop"
 }
 
-variable "image_sku" {
+variable "source_image_sku" {
   type    = string
-  default = "23h2ent"
+  default = "20h2-ent"
 }
 
 variable "tag_created_date" {
-  type    = string
-  default = ""
-}
-
-variable "image_version" {
   type    = string
   default = ""
 }
@@ -163,8 +158,8 @@ variable "working_directory" {
 }
 
 locals {
-  destination_image_name = "${var.image_publisher}"
-  managed_image_name     = "${var.image_publisher}-${var.image_version }"
+  destination_image_name = "${var.source_image_publisher}-${var.source_image_offer}-${var.source_image_sku}"
+  managed_image_name     = "${var.source_image_offer}-${var.source_image_sku}-${var.image_date}"
 }
 
 source "azure-arm" "microsoft-windows" {
@@ -177,29 +172,29 @@ source "azure-arm" "microsoft-windows" {
     Source          = "${var.tag_build_source_repo}"
     Type            = "${var.tag_function}"
   }
-  build_key_vault_name      = "${var.build_key_vault}"
-  build_resource_group_name = "${var.build_resource_group}"
-  client_id                 = "${var.client_id}"
-  client_secret             = "${var.client_secret}"
-  communicator              = "winrm"
+  build_key_vault_name                   = "${var.build_key_vault}"
+  build_resource_group_name              = "${var.build_resource_group}"
+  client_id                              = "${var.azure_client_id}"
+  client_secret                          = "${var.azure_client_secret}"
+  communicator                           = "winrm"
   shared_image_gallery_destination {
-    subscription        = "${var.subscription_id}"
-    resource_group      = "${var.destination_resource_group_name}"
-    gallery_name        = "${var.destination_gallery_name}"
-    image_name          = "${local.destination_image_name}"
-    image_version       = "${var.destination_image_version}"
-    replication_regions = ["${var.location}"]
+      subscription = "${var.azure_subscription_id}"
+      resource_group = "${var.destination_resource_group_name}"
+      gallery_name = "${var.destination_gallery_name}"
+      image_name = "${local.destination_image_name}"
+      image_version = "${var.destination_image_version}"
+      replication_regions = [ "${var.location}" ]
   }
-  image_offer                            = "${var.image_offer}"
-  image_publisher                        = "${var.image_publisher}"
-  image_sku                              = "${var.image_sku}"
+  image_offer                            = "${var.source_image_offer}"
+  image_publisher                        = "${var.source_image_publisher}"
+  image_sku                              = "${var.source_image_sku}"
   image_version                          = "latest"
   managed_image_name                     = "${local.managed_image_name}"
   managed_image_resource_group_name      = "${var.managed_image_resource_group_name}"
   os_type                                = "Windows"
   private_virtual_network_with_public_ip = true
-  subscription_id                        = "${var.subscription_id}"
-  tenant_id                              = "${var.tenant_id}"
+  subscription_id                        = "${var.azure_subscription_id}"
+  tenant_id                              = "${var.azure_tenant_id}"
   virtual_network_name                   = "${var.build_vnet}"
   virtual_network_resource_group_name    = "${var.build_resource_group}"
   virtual_network_subnet_name            = "${var.build_subnet}"
@@ -215,12 +210,12 @@ build {
 
   provisioner "powershell" {
     environment_vars = ["Locale=${var.locale}",
-    "PackagesUrl=${var.packages_url}"]
-    scripts = ["build/rds/000_PrepImage.ps1",
-      "build/rds/011_SupportFunctions.ps1",
-      "build/rds/013_RegionLanguage.ps1",
-      "build/rds/014_RolesFeatures.ps1",
-    "build/rds/015_Customise.ps1"]
+                        "PackagesUrl=${var.packages_url}"]
+    scripts          = ["build/rds/000_PrepImage.ps1",
+                        "build/rds/011_SupportFunctions.ps1",
+                        "build/rds/013_RegionLanguage.ps1",
+                        "build/rds/014_RolesFeatures.ps1",
+                        "build/rds/015_Customise.ps1"]
   }
 
   provisioner "windows-restart" {}
@@ -229,35 +224,34 @@ build {
     filters         = ["exclude:$_.Title -like '*Silverlight*'", "exclude:$_.Title -like '*Preview*'", "include:$true"]
     search_criteria = "IsInstalled=0"
     update_limit    = 25
-
   }
 
   provisioner "powershell" {
     environment_vars = ["AppsUrl=${var.apps_url}"]
-    scripts = ["build/rds/100_MicrosoftVcRedists.ps1",
-      "build/rds/101_Avd-Agents.ps1",
-      "build/rds/102_MicrosoftFSLogixApps.ps1",
-      "build/rds/102_MicrosoftFSLogixAppsPreview.ps1",
-      "build/rds/103_MicrosoftNET.ps1",
-      "build/rds/104_MicrosoftEdge.ps1",
-      "build/rds/200_MicrosoftOneDrive.ps1",
-      "build/rds/201_MicrosoftTeams.ps1",
-      "build/rds/202_Microsoft365Apps.ps1",
-      "build/rds/210_MicrosoftPowerToys.ps1",
-      "build/rds/211_MicrosoftVisualStudioCode.ps1",
-      "build/rds/400_AdobeAcrobatReaderDC.ps1",
-      "build/rds/401_FoxitPDFReader.ps1",
-      "build/rds/402_ZoomMeetings.ps1",
-      "build/rds/403_GoogleChrome.ps1",
-      "build/rds/404_NotepadPlusPlus.ps1",
-      "build/rds/406_VLCMediaPlayer.ps1",
-      "build/rds/407_7Zip.ps1",
-      "build/rds/408_RemoteDesktopAnalyzer.ps1",
-      "build/rds/409_CiscoWebEx.ps1",
-      "build/rds/410_ImageGlass.ps1",
-      "build/rds/411_draw.io.ps1",
-      "build/rds/412_MozillaFirefox.ps1",
-    "build/rds/500_Rds-LobApps.ps1"]
+    scripts          = ["build/rds/100_MicrosoftVcRedists.ps1",
+                        "build/rds/101_Avd-Agents.ps1",
+                        "build/rds/102_MicrosoftFSLogixApps.ps1",
+                        "build/rds/102_MicrosoftFSLogixAppsPreview.ps1",
+                        "build/rds/103_MicrosoftNET.ps1",
+                        "build/rds/104_MicrosoftEdge.ps1",
+                        "build/rds/200_MicrosoftOneDrive.ps1",
+                        "build/rds/201_MicrosoftTeams.ps1",
+                        "build/rds/202_Microsoft365Apps.ps1",
+                        "build/rds/210_MicrosoftPowerToys.ps1",
+                        "build/rds/211_MicrosoftVisualStudioCode.ps1",
+                        "build/rds/400_AdobeAcrobatReaderDC.ps1",
+                        "build/rds/401_FoxitPDFReader.ps1",
+                        "build/rds/402_ZoomMeetings.ps1",
+                        "build/rds/403_GoogleChrome.ps1",
+                        "build/rds/404_NotepadPlusPlus.ps1",
+                        "build/rds/406_VLCMediaPlayer.ps1",
+                        "build/rds/407_7Zip.ps1",
+                        "build/rds/408_RemoteDesktopAnalyzer.ps1",
+                        "build/rds/409_CiscoWebEx.ps1",
+                        "build/rds/410_ImageGlass.ps1",
+                        "build/rds/411_draw.io.ps1",
+                        "build/rds/412_MozillaFirefox.ps1",
+                        "build/rds/500_Rds-LobApps.ps1"]
   }
 
   provisioner "windows-restart" {}
@@ -281,10 +275,10 @@ build {
 
   provisioner "powershell" {
     scripts = ["build/rds/545_ResumeCitrixVDA.ps1",
-      "build/rds/996_CitrixOptimizer.ps1",
-      "build/rds/997_MicrosoftOptimise.ps1",
-      "build/rds/998_Bisf.ps1",
-    "build/rds/999_CleanupImage.ps1"]
+                "build/rds/996_CitrixOptimizer.ps1",
+                "build/rds/997_MicrosoftOptimise.ps1",
+                "build/rds/998_Bisf.ps1",
+                "build/rds/999_CleanupImage.ps1"]
   }
 
   provisioner "file" {
