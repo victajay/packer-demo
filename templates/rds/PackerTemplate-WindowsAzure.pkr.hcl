@@ -12,10 +12,6 @@ variable "apps_directory" {
   default = "C:\\Apps"
 }
 
-variable "apps_url" {
-  type    = string
-  default = ""
-}
 
 variable "client_id" {
   type    = string
@@ -39,22 +35,22 @@ variable "tenant_id" {
 
 variable "build_key_vault" {
   type    = string
-  default = "vicjayimageaustraliaeast"
+  default = "keyvaultmypacker"
 }
 
 variable "build_resource_group" {
   type    = string
-  default = "mypackergroup"
+  default = "myPackerGroup"
 }
 
 variable "build_subnet" {
   type    = string
-  default = "subnet-Packer"
+  default = "mypACKERSubnet"
 }
 
 variable "build_vnet" {
   type    = string
-  default = "vnet-ImageBuild-AustraliaEast"
+  default = "mypACKERVnet"
 }
 
 variable "destination_gallery_name" {
@@ -64,7 +60,7 @@ variable "destination_gallery_name" {
 
 variable "destination_resource_group_name" {
   type    = string
-  default = "mypackergroup"
+  default = "myPackerGroup"
 }
 
 variable "destination_image_version" {
@@ -94,17 +90,22 @@ variable "locale" {
 
 variable "managed_image_resource_group_name" {
   type    = string
-  default = "mypackergroup"
+  default = "myPackerGroup"
 }
 
 variable "packages_url" {
   type    = string
-  default = ""
+  default = "https://packerstoragevj.blob.core.windows.net/packages"
+}
+
+variable "apps_url" {
+  type    = string
+  default = "https://packerstoragevj.blob.core.windows.net/apps"
 }
 
 variable "image_offer" {
   type    = string
-  default = "Windows11"
+  default = "Windows-11"
 }
 
 variable "image_publisher" {
@@ -114,7 +115,7 @@ variable "image_publisher" {
 
 variable "image_sku" {
   type    = string
-  default = "23h2ent"
+  default = "win11-21h2-ent"
 }
 
 variable "tag_created_date" {
@@ -124,7 +125,7 @@ variable "tag_created_date" {
 
 variable "image_version" {
   type    = string
-  default = ""
+  default = "latest"
 }
 
 variable "tag_function" {
@@ -163,8 +164,8 @@ variable "working_directory" {
 }
 
 locals {
-  destination_image_name = "${var.image_publisher}"
-  managed_image_name     = "${var.image_publisher}-${var.image_version }"
+  destination_image_name = "Windows11-definiton-01"
+  managed_image_name     = "${var.image_publisher}-${var.image_version}"
 }
 
 source "azure-arm" "microsoft-windows" {

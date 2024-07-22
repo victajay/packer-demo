@@ -1,6 +1,0 @@
-image_publisher = "MicrosoftWindowsDesktop"
-image_offer     = "Windows-11"
-image_sku       = "23h2-ent"
-image_version   = "latest"
-apps_url        = "https://packerstoragevj.blob.core.windows.net/apps"
-packages_url    = "https://packerstoragevj.blob.core.windows.net/packages"
