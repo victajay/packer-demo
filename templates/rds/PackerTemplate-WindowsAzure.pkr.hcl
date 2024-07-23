@@ -35,7 +35,7 @@ variable "tenant_id" {
 
 variable "build_key_vault" {
   type    = string
-  default = "keyvaultmypacker"
+  default = ""
 }
 
 variable "build_resource_group" {
