@@ -25,7 +25,7 @@ variable "client_secret" {
 
 variable "subscription_id" {
   type    = string
-  default = "545a7b1a-0425-4cf0-95ac-825c1e4130e8"
+  default = ""
 }
 
 variable "tenant_id" {
