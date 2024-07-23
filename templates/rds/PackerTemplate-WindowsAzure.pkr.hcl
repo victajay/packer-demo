@@ -15,12 +15,12 @@ variable "apps_directory" {
 
 variable "client_id" {
   type    = string
-  default = "cc057028-e6d0-456a-b07b-50de4f7ca8e5"
+  default = ""
 }
 
 variable "client_secret" {
   type    = string
-  default = "jYY8Q~23yFH77~dQrEJCaNgNdreTAynHxCnXZcWa"
+  default = ""
 }
 
 variable "subscription_id" {
