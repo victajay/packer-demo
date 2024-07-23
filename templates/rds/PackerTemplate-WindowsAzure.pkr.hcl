@@ -30,7 +30,7 @@ variable "subscription_id" {
 
 variable "tenant_id" {
   type    = string
-  default = "4e5d4dd9-71bf-4ae4-a2c1-4c31c300b220"
+  default = ""
 }
 
 variable "build_key_vault" {
